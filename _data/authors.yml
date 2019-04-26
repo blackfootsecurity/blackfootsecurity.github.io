@@ -20,3 +20,14 @@ SakiiR:
   facebook: False
   twitter: sakiirsecurity
   cover: False
+Edznux:
+  username: Edznux
+  name: Edouard Schweisguth
+  location: Paris, France
+  url: Edznux
+  url_full: https://edznux.fr
+  bio: Dev, Hack. CTF player for Blackfoot Security
+  picture: assets/images/edznux.png
+  facebook: False
+  twitter: edznux
+  cover: False
