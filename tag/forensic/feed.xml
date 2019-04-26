@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<feed xmlns="http://www.w3.org/2005/Atom" >
+  <generator uri="https://jekyllrb.com/" version="3.7.4">Jekyll</generator>
+  <link href="/tag/forensic/feed.xml" rel="self" type="application/atom+xml" />
+  <link href="/" rel="alternate" type="text/html" />
+  <updated>2019-04-26T07:29:51+00:00</updated>
+  <id>/tag/forensic/feed.xml</id>
+
+  
+  
+  
+
+  
+    <title type="html">Blackfoot Security | </title>
+  
+
+  
+    <subtitle>Blackfoot's Cybersecurity Specialists</subtitle>
+  
+
+  
+
+  
+    
+      
+    
+      
+    
+      
+    
+  
+
+  
+  
+
+  
+    <entry>
+      <title type="html">Securinets 2019 Final - Hidden in plain sight forensic challenge</title>
+      <link href="/securinets-final-hidden-in-plain-sight" rel="alternate" type="text/html" title="Securinets 2019 Final - Hidden in plain sight forensic challenge" />
+      <published>2019-03-24T18:10:00+00:00</published>
+      <updated>2019-03-24T18:10:00+00:00</updated>
+      <id>/securinets-final-hidden-in-plain-sight</id>
+      <content type="html" xml:base="/securinets-final-hidden-in-plain-sight">&lt;p&gt;Blackfoot Security went to the Securinets CTF Final event @ Tunis the April 14 2019.&lt;/p&gt;
+
+&lt;p&gt;Hidden in plain sight was an easy forensic challenge that gave us &lt;strong&gt;408pts&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;The challenge is a network capture in the standard pcap format named &lt;code class=&quot;highlighter-rouge&quot;&gt;for2.pcap&lt;/code&gt;.
+Openning it in wireshark quickly revealed something interresting: there is a lot of icmp (ping) packets.&lt;/p&gt;
+
+&lt;p&gt;When looking a little bit deeper, we saw that most of these icmp packets have a length equal to 60.
+The last 2 bytes of each of those are some random looking ASCII character.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/hidden-in-plain-sight/icmp.png&quot; alt=&quot;Decoded&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Let’s dump all those ICMP packet to plaintext file with tshark (cli version of wireshark)&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tshark &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; for2.pcap &lt;span class=&quot;nt&quot;&gt;-T&lt;/span&gt; fields &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; data &lt;span class=&quot;s2&quot;&gt;&quot;icmp &amp;amp;&amp;amp; frame.len == 60&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; for2.icmp.txt
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The file look like :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;5f260600000000005353
+a644060000000000426a
+0f570600000000006233
+59680600000000005673
+07780600000000005a43
+c78e060000000000426f
+96b60600000000005958
+1bcc0600000000005a6c
+&amp;lt;snip&amp;gt;......&amp;lt;/snip&amp;gt;
+eb420b00000000004d6a
+505b0b00000000006733
+b5a80b0000000000596d
+1abc0b00000000005534
+47d90b00000000005954
+f9ed0b00000000006468
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;At a first glance, only the last 4 digits seem to be in the ASCII range, so we started dumping it.
+With some command line tools, we can get the last 4 number and convert them into a single line.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;for2.icmp.txt | cut &lt;span class=&quot;nt&quot;&gt;-c17-20&lt;/span&gt; | tr &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'\n'&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We get the following line : &lt;code class=&quot;highlighter-rouge&quot;&gt;5353426a623356735a43426f5958...&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Now, because I’m lazy, I used the awesome &lt;a href=&quot;https://gchq.github.io/CyberChef/&quot;&gt;CyberChef&lt;/a&gt; tool to convert it in readable form.
+First from hex to ASCII, then it looked like base64, so I added the “from base64” decoder.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/hidden-in-plain-sight/cyberchef.png&quot; alt=&quot;Decoded&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The final flag is : &lt;code class=&quot;highlighter-rouge&quot;&gt;securinets{1249ce19ef6180e143506b5287be8a7a}&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;I started using Scapy, but my setup failed and this was simple enough to be done that way.
+Next time, a simple for loop with a filter on ICMP packet should be fine :).&lt;/p&gt;</content>
+
+      
+      
+      
+      
+      
+
+      <author>
+          <name>Edouard Schweisguth</name>
+        
+        
+      </author>
+
+      
+
+      
+        <category term="Writeup" />
+      
+        <category term="CTF" />
+      
+        <category term="Forensic" />
+      
+
+      
+        <summary type="html">Blackfoot Security went to the Securinets CTF Final event @ Tunis the April 14 2019.</summary>
+      
+
+      
+      
+    </entry>
+  
+</feed>
